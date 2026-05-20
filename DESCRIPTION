@@ -1,0 +1,22 @@
+Package: modelscloud
+Title: R Interface for the ModelsCloud Platform
+Version: 0.1.0
+Authors@R:
+    person("Mohsen", "Sadatsafavi", email = "mohsen.sadatsafavi@ubc.ca",
+           role = c("aut", "cre"))
+Description: A high-level R interface for accessing models hosted on the
+    ModelsCloud platform (modelscloud.resp.core.ubc.ca). Wraps the pexaclient
+    package to provide a session-based, model-centric workflow: connect once
+    with connect_to_model(), then call model_run(), get_default_input(), and
+    get_sample_input() without repeating credentials or model paths.
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Imports:
+    pexaclient
+Remotes:
+    resplab/pexaclient
+Suggests:
+    knitr,
+    rmarkdown
+Config/roxygen2/version: 8.0.0
