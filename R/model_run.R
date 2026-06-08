@@ -25,10 +25,11 @@
 #'   [connect_to_model()] (default `FALSE`).
 #'
 #' @return The model output with its original R class preserved (e.g. a data
-#'   frame), deserialised from RDS format.
+#'   frame), deserialised from RDS format. The raw server response is attached
+#'   as an invisible attribute, which [get_plots()] uses to retrieve any plots
+#'   the model produced.
 #'
-#' @seealso [connect_to_model()], [get_async_results()],
-#'   [list_extra_output()], [get_extra_output()]
+#' @seealso [connect_to_model()], [get_plots()], [get_async_results()]
 #'
 #' @examples
 #' \dontrun{
@@ -82,5 +83,14 @@ model_run <- function(
     async      = async
   )
 
-  .from_rds(res)
+  out <- .from_rds(res)
+
+  # Attach a slim version of the server response so get_plots() can reach
+  # executionId and extraData. rdsData is stripped — it's the base64-encoded
+  # wire copy of `out` itself, so keeping it would double memory usage.
+  res_slim <- res
+  res_slim$rdsData <- NULL
+  attr(out, ".pexa_result") <- res_slim
+
+  out
 }

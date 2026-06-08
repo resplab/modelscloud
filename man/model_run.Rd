@@ -35,7 +35,9 @@ or the \code{MODELSCLOUD_ACCESS_KEY} environment variable.}
 }
 \value{
 The model output with its original R class preserved (e.g. a data
-frame), deserialised from RDS format.
+frame), deserialised from RDS format. The raw server response is attached
+as an invisible attribute, which \code{\link[=get_plots]{get_plots()}} uses to retrieve any plots
+the model produced.
 }
 \description{
 Executes a model on the ModelsCloud platform and returns its result. All
@@ -63,6 +65,5 @@ result <- get_async_results(job)
 }
 }
 \seealso{
-\code{\link[=connect_to_model]{connect_to_model()}}, \code{\link[pexaclient:get_async_results]{get_async_results()}},
-\code{\link[pexaclient:list_extra_output]{list_extra_output()}}, \code{\link[pexaclient:get_extra_output]{get_extra_output()}}
+\code{\link[=connect_to_model]{connect_to_model()}}, \code{\link[=get_plots]{get_plots()}}, \code{\link[pexaclient:get_async_results]{get_async_results()}}
 }
