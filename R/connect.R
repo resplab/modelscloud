@@ -16,7 +16,7 @@
 #'   `MODELSCLOUD_ACCESS_KEY` environment variable in your `.Renviron` to avoid
 #'   passing this in scripts.
 #' @param server_url Character. Base URL of the ModelsCloud server. Defaults to
-#'   `"https://modelscloud.resp.core.ubc.ca/"` if never overridden.
+#'   `"https://api.modelscloud.resp.core.ubc.ca/"` if never overridden.
 #' @param async Logical. If `TRUE`, subsequent [model_run()] calls will default
 #'   to asynchronous execution. Default is `FALSE`.
 #'

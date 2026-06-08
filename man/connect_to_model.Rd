@@ -21,7 +21,7 @@ stored key (if any) is left unchanged. You can also set the
 passing this in scripts.}
 
 \item{server_url}{Character. Base URL of the ModelsCloud server. Defaults to
-\code{"https://modelscloud.resp.core.ubc.ca/"} if never overridden.}
+\code{"https://api.modelscloud.resp.core.ubc.ca/"} if never overridden.}
 
 \item{async}{Logical. If \code{TRUE}, subsequent \code{\link[=model_run]{model_run()}} calls will default
 to asynchronous execution. Default is \code{FALSE}.}

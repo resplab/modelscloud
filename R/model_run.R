@@ -10,21 +10,22 @@
 #' `pexa_result_async` object. Use [get_async_results()] to poll for
 #' completion.
 #'
+#' @param model_input Named list (or data frame) of input parameters to pass to
+#'   the model. This is the first positional argument, so
+#'   `model_run(my_input)` works once [connect_to_model()] has been called. If
+#'   `NULL` the model uses its own built-in defaults.
 #' @param model_path Character. Model identifier in `"namespace/model"` format.
 #'   Falls back to the value stored by [connect_to_model()].
-#' @param model_input Named list of input parameters to pass to the model. If
-#'   `NULL` the model uses its own built-in defaults.
-#' @param func_name Character. The function within the model to invoke. If
-#'   `NULL` the model's default function is called.
+#' @param func_name Character. The function within the model to invoke.
+#'   Defaults to `"model_run"`.
 #' @param access_key Character. API bearer token. Falls back to the stored key
 #'   or the `MODELSCLOUD_ACCESS_KEY` environment variable.
 #' @param server_url Character. Server base URL. Falls back to the stored URL.
 #' @param async Logical. Run asynchronously? Falls back to the value from
 #'   [connect_to_model()] (default `FALSE`).
 #'
-#' @return For synchronous calls a `pexa_result` object. For asynchronous
-#'   calls a `pexa_result_async` object — call [get_async_results()] to poll
-#'   until the job completes.
+#' @return The model output with its original R class preserved (e.g. a data
+#'   frame), deserialised from RDS format.
 #'
 #' @seealso [connect_to_model()], [get_async_results()],
 #'   [list_extra_output()], [get_extra_output()]
@@ -45,54 +46,41 @@
 #' }
 #' @export
 model_run <- function(
-  model_path  = NULL,
   model_input = NULL,
-  func_name   = NULL,
-  access_key  = NULL,
-  server_url  = NULL,
-  async       = NULL
+  model_path = NULL,
+  func_name = "model_run",
+  access_key = NULL,
+  server_url = NULL,
+  async = NULL
 ) {
-  model_path <- .resolve_arg(model_path, .pkg_cache$model_path,
-    "model_path not set. Call connect_to_model() first or supply model_path.")
+  model_path <- .resolve_arg(
+    model_path,
+    .pkg_cache$model_path,
+    "model_path not set. Call connect_to_model() first or supply model_path."
+  )
 
   access_key <- .resolve_key(access_key)
   server_url <- .resolve_arg(server_url, .pkg_cache$server_url, NULL)
-  async      <- if (!is.null(async)) isTRUE(async) else .pkg_cache$async
+  async <- if (!is.null(async)) isTRUE(async) else .pkg_cache$async
 
-  pexaclient::function_call(
+  # pexacloud calls do.call(server_func, funcInput), so funcInput must be a
+  # named list whose keys are the server function's argument names. Wrap the
+  # data under "model_input". Also convert any data frame to a column-oriented
+  # list so it survives the JSON → as.data.frame() round-trip on the server.
+  func_input <- if (!is.null(model_input)) {
+    list(model_input = if (is.data.frame(model_input)) as.list(model_input) else model_input)
+  } else {
+    NULL
+  }
+
+  res <- pexaclient::function_call(
     model_path = model_path,
-    func_input = model_input,
+    func_input = func_input,
     func_name  = func_name,
     access_key = access_key,
     server_url = server_url,
     async      = async
   )
+
+  .from_rds(res)
 }
-
-
-# --- internal helpers --------------------------------------------------------
-
-.resolve_arg <- function(arg, cached, error_msg) {
-  val <- if (!is.null(arg)) arg else cached
-  if (is.null(val) && !is.null(error_msg)) {
-    stop(error_msg, call. = FALSE)
-  }
-  val
-}
-
-.resolve_key <- function(access_key) {
-  val <- access_key %||% .pkg_cache$access_key
-  if (is.null(val)) {
-    val <- Sys.getenv("MODELSCLOUD_ACCESS_KEY", unset = "")
-  }
-  if (identical(val, "")) {
-    stop(
-      "API access key not set. Supply access_key, call connect_to_model(), ",
-      "or set MODELSCLOUD_ACCESS_KEY in .Renviron.",
-      call. = FALSE
-    )
-  }
-  val
-}
-
-`%||%` <- function(x, y) if (!is.null(x)) x else y

@@ -5,23 +5,25 @@
 \title{Run a ModelsCloud Model}
 \usage{
 model_run(
-  model_path = NULL,
   model_input = NULL,
-  func_name = NULL,
+  model_path = NULL,
+  func_name = "model_run",
   access_key = NULL,
   server_url = NULL,
   async = NULL
 )
 }
 \arguments{
+\item{model_input}{Named list (or data frame) of input parameters to pass to
+the model. This is the first positional argument, so
+\code{model_run(my_input)} works once \code{\link[=connect_to_model]{connect_to_model()}} has been called. If
+\code{NULL} the model uses its own built-in defaults.}
+
 \item{model_path}{Character. Model identifier in \code{"namespace/model"} format.
 Falls back to the value stored by \code{\link[=connect_to_model]{connect_to_model()}}.}
 
-\item{model_input}{Named list of input parameters to pass to the model. If
-\code{NULL} the model uses its own built-in defaults.}
-
-\item{func_name}{Character. The function within the model to invoke. If
-\code{NULL} the model's default function is called.}
+\item{func_name}{Character. The function within the model to invoke.
+Defaults to \code{"model_run"}.}
 
 \item{access_key}{Character. API bearer token. Falls back to the stored key
 or the \code{MODELSCLOUD_ACCESS_KEY} environment variable.}
@@ -32,9 +34,8 @@ or the \code{MODELSCLOUD_ACCESS_KEY} environment variable.}
 \code{\link[=connect_to_model]{connect_to_model()}} (default \code{FALSE}).}
 }
 \value{
-For synchronous calls a \code{pexa_result} object. For asynchronous
-calls a \code{pexa_result_async} object — call \code{\link[pexaclient:get_async_results]{get_async_results()}} to poll
-until the job completes.
+The model output with its original R class preserved (e.g. a data
+frame), deserialised from RDS format.
 }
 \description{
 Executes a model on the ModelsCloud platform and returns its result. All
