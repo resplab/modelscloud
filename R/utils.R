@@ -30,4 +30,16 @@
   readRDS(con)
 }
 
+# Decode a completed pexa_result into its native R object and attach a slim
+# copy of the server response (rdsData stripped) so get_plots() can reach the
+# executionId / extraData without doubling memory. Shared by the sync path in
+# model_run() and the async-completion path in get_async_results().
+.decode_result <- function(res) {
+  out <- .from_rds(res)
+  res_slim <- res
+  res_slim$rdsData <- NULL
+  attr(out, ".pexa_result") <- res_slim
+  out
+}
+
 `%||%` <- function(x, y) if (!is.null(x)) x else y

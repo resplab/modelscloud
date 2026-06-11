@@ -30,8 +30,10 @@ or the \code{MODELSCLOUD_ACCESS_KEY} environment variable.}
 
 \item{server_url}{Character. Server base URL. Falls back to the stored URL.}
 
-\item{async}{Logical. Run asynchronously? Falls back to the value from
-\code{\link[=connect_to_model]{connect_to_model()}} (default \code{FALSE}).}
+\item{async}{Logical. Run asynchronously? When \code{TRUE}, returns a job handle
+immediately; retrieve the result with \code{\link[=get_async_results]{get_async_results()}}. If left
+\code{NULL} (default), uses the session default set by \code{\link[=connect_to_model]{connect_to_model()}}
+(itself \code{FALSE} unless changed).}
 }
 \value{
 The model output with its original R class preserved (e.g. a data
@@ -46,7 +48,7 @@ explicitly supplied, so in a typical session you only need to call
 \code{model_run()} with no arguments (or just \code{model_input}).
 
 For asynchronous jobs the function returns immediately with a
-\code{pexa_result_async} object. Use \code{\link[pexaclient:get_async_results]{get_async_results()}} to poll for
+\code{pexa_result_async} object. Use \code{\link[=get_async_results]{get_async_results()}} to poll for
 completion.
 }
 \examples{
@@ -65,5 +67,5 @@ result <- get_async_results(job)
 }
 }
 \seealso{
-\code{\link[=connect_to_model]{connect_to_model()}}, \code{\link[=get_plots]{get_plots()}}, \code{\link[pexaclient:get_async_results]{get_async_results()}}
+\code{\link[=connect_to_model]{connect_to_model()}}, \code{\link[=get_plots]{get_plots()}}, \code{\link[=get_async_results]{get_async_results()}}
 }

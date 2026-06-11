@@ -21,8 +21,10 @@
 #' @param access_key Character. API bearer token. Falls back to the stored key
 #'   or the `MODELSCLOUD_ACCESS_KEY` environment variable.
 #' @param server_url Character. Server base URL. Falls back to the stored URL.
-#' @param async Logical. Run asynchronously? Falls back to the value from
-#'   [connect_to_model()] (default `FALSE`).
+#' @param async Logical. Run asynchronously? When `TRUE`, returns a job handle
+#'   immediately; retrieve the result with [get_async_results()]. If left
+#'   `NULL` (default), uses the session default set by [connect_to_model()]
+#'   (itself `FALSE` unless changed).
 #'
 #' @return The model output with its original R class preserved (e.g. a data
 #'   frame), deserialised from RDS format. The raw server response is attached
@@ -83,14 +85,15 @@ model_run <- function(
     async      = async
   )
 
-  out <- .from_rds(res)
+  # Async submit: the server returns a job handle ("running") with no rdsData
+  # yet. Return it undecoded so the user can poll with get_async_results().
+  if (inherits(res, "pexa_result_async")) {
+    message(
+      "Async job submitted (executionId: ", res$executionId, "). ",
+      "Retrieve it with get_async_results()."
+    )
+    return(res)
+  }
 
-  # Attach a slim version of the server response so get_plots() can reach
-  # executionId and extraData. rdsData is stripped — it's the base64-encoded
-  # wire copy of `out` itself, so keeping it would double memory usage.
-  res_slim <- res
-  res_slim$rdsData <- NULL
-  attr(out, ".pexa_result") <- res_slim
-
-  out
+  .decode_result(res)
 }

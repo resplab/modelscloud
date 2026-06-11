@@ -23,8 +23,10 @@ passing this in scripts.}
 \item{server_url}{Character. Base URL of the ModelsCloud server. Defaults to
 \code{"https://api.modelscloud.resp.core.ubc.ca/"} if never overridden.}
 
-\item{async}{Logical. If \code{TRUE}, subsequent \code{\link[=model_run]{model_run()}} calls will default
-to asynchronous execution. Default is \code{FALSE}.}
+\item{async}{Logical. Sets only the \emph{default} execution mode for the
+session. The actual choice is made per call by \code{\link[=model_run]{model_run()}}'s own \code{async}
+argument; this just determines what \code{model_run()} does when its \code{async} is
+left unspecified. Default is \code{FALSE}.}
 }
 \value{
 Invisibly returns the stored \code{model_path}.

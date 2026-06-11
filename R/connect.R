@@ -17,8 +17,10 @@
 #'   passing this in scripts.
 #' @param server_url Character. Base URL of the ModelsCloud server. Defaults to
 #'   `"https://api.modelscloud.resp.core.ubc.ca/"` if never overridden.
-#' @param async Logical. If `TRUE`, subsequent [model_run()] calls will default
-#'   to asynchronous execution. Default is `FALSE`.
+#' @param async Logical. Sets only the *default* execution mode for the
+#'   session. The actual choice is made per call by [model_run()]'s own `async`
+#'   argument; this just determines what `model_run()` does when its `async` is
+#'   left unspecified. Default is `FALSE`.
 #'
 #' @return Invisibly returns the stored `model_path`.
 #'
