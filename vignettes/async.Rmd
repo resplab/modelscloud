@@ -1,0 +1,204 @@
+---
+title: "Synchronous and asynchronous model runs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Synchronous and asynchronous model runs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE          # all chunks need a live server + token; shown, not run
+)
+```
+
+```{r setup}
+library(modelscloud)
+```
+
+## Two ways to run a model
+
+Some ModelsCloud models can be executed in either of two modes:
+
+- **Synchronous** (the default): you call `model_run()` and R **blocks** until
+  the server finishes, then hands you the result. Simple, and ideal for quick
+  models.
+- **Asynchronous**: `model_run(async = TRUE)` **returns immediately** with a
+  lightweight *job handle*. The model keeps running on the server while your R
+  session is free to do other things. You fetch the result later with
+  `get_async_results()`.
+
+Async exists for long-running models — policy simulations, large agent counts,
+anything that might take minutes. Blocking an interactive session (or hitting an
+HTTP timeout) on such a run is painful; submitting it as a job is not.
+
+Throughout this vignette the example is `epicrpexa`, a COPD policy
+microsimulation that supports both modes.
+
+```{r connect}
+connect_to_model("mohsenss/epicrpexa", access_key = "YOUR_API_KEY")
+```
+
+(You can also store your key once in `.Renviron` as `MODELSCLOUD_ACCESS_KEY`
+and omit `access_key` — see the README.)
+
+## Synchronous: the baseline
+
+Nothing special is required. `model_run()` waits and returns the decoded result:
+
+```{r sync}
+input  <- get_default_input()
+result <- model_run(input)        # blocks until the server is done
+
+result$basic$total_qaly
+```
+
+This is fine when the model returns in a few seconds. For a small agent count it
+will. For a realistic policy run it won't — which is where async comes in.
+
+## Asynchronous: submit, then retrieve
+
+Set `async = TRUE`. `model_run()` returns a **job handle** right away:
+
+```{r async-submit}
+job <- model_run(input, async = TRUE)
+#> Async job submitted (executionId: 6a2a...). Retrieve it with get_async_results().
+
+class(job)
+#> [1] "pexa_result_async" "pexa_result"
+```
+
+`job` is *not* your result — it is a receipt. Pass it to `get_async_results()`
+to fetch the actual output once the server has finished.
+
+### Option A — block until it's done (`wait = TRUE`)
+
+The simplest pattern. `get_async_results()` polls the server for you and returns
+only when the job is complete:
+
+```{r async-wait}
+result <- get_async_results(job, wait = TRUE)
+
+result$basic$total_qaly
+```
+
+You can do the whole thing in one line:
+
+```{r async-oneline}
+result <- get_async_results(model_run(input, async = TRUE), wait = TRUE)
+```
+
+`wait = TRUE` polls every `interval` seconds (default 2) up to `timeout` seconds
+(default 300). If the timeout is reached the job handle is returned with a
+warning, so you can keep polling rather than losing the job:
+
+```{r async-timeout}
+# Wait up to 30 minutes, checking every 10 seconds
+result <- get_async_results(job, wait = TRUE, interval = 10, timeout = 1800)
+```
+
+### Option B — check once, poll manually
+
+By default (`wait = FALSE`) `get_async_results()` checks **once** and returns
+immediately:
+
+- if the job has finished, you get the decoded result;
+- if it is still running, you get the job handle back, unchanged.
+
+This lets you do other work between checks, or drive your own polling loop:
+
+```{r async-manual}
+result <- get_async_results(job)            # one check
+
+while (inherits(result, "pexa_result_async")) {
+  message("still running...")
+  Sys.sleep(5)
+  result <- get_async_results(job)          # check again
+}
+
+result$basic$total_qaly                     # finished
+```
+
+The test `inherits(result, "pexa_result_async")` is how you tell "still a job
+handle" from "this is the finished result".
+
+## Choosing the mode per call vs. for the session
+
+`async` is decided **per call** on `model_run()`. You do not need to reconnect
+to switch modes:
+
+```{r per-call}
+quick <- model_run(small_input)                  # sync
+job   <- model_run(big_input, async = TRUE)      # async, same session
+```
+
+If most of your runs are long, set async as the **session default** with
+`connect_to_model()`, and a bare `model_run()` becomes asynchronous:
+
+```{r session-default}
+connect_to_model("mohsenss/epicrpexa", access_key = "YOUR_API_KEY",
+                 async = TRUE)
+
+job <- model_run(input)             # async, because that's the session default
+```
+
+`connect_to_model(async = ...)` only sets the *default*. An explicit argument on
+`model_run()` always wins, so you can still force a single call back to sync:
+
+```{r override}
+result <- model_run(input, async = FALSE)   # sync, despite the async default
+```
+
+The resolution order is: **`model_run()`'s `async` argument → session default
+from `connect_to_model()` → `FALSE`**.
+
+## A realistic large run
+
+The reason to reach for async — a high agent count that takes a while. Set the
+agent count on the input, submit asynchronously, and block until done:
+
+```{r big-run}
+input <- get_default_input()
+input$n_agents <- 1e6          # a million agents
+
+result <- get_async_results(
+  model_run(input, async = TRUE),
+  wait = TRUE, timeout = 3600  # allow up to an hour
+)
+
+result$basic$total_qaly
+```
+
+## Plots work the same way
+
+If a model produces plots, [get_plots()] works on an async result exactly as it
+does on a synchronous one — the server response needed to fetch plots travels
+with the decoded result:
+
+```{r plots}
+result <- get_async_results(model_run(input, async = TRUE), wait = TRUE)
+
+get_plots(result)            # list available plots
+get_plots(result, id = 1)    # fetch and display one
+```
+
+## Cheat sheet
+
+| Task | Call |
+|---|---|
+| Run and wait | `model_run(x)` |
+| Submit a job | `job <- model_run(x, async = TRUE)` |
+| Block until done | `get_async_results(job, wait = TRUE)` |
+| Check once (non-blocking) | `get_async_results(job)` |
+| Is it still running? | `inherits(res, "pexa_result_async")` |
+| Make async the session default | `connect_to_model(..., async = TRUE)` |
+| Force one call back to sync | `model_run(x, async = FALSE)` |
+
+## See also
+
+- `?model_run`
+- `?get_async_results`
+- `?connect_to_model`
