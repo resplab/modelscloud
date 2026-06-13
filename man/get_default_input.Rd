@@ -29,7 +29,7 @@ not explicitly supplied.
 }
 \examples{
 \dontrun{
-connect_to_model("resp/epicr", access_key = "YOUR_KEY")
+connect_to_model("examples/toymodel2", access_key = "YOUR_KEY")
 defaults <- get_default_input()
 str(defaults)
 }

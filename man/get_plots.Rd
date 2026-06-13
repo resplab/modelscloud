@@ -37,10 +37,9 @@ with \code{\link[graphics:plot]{graphics::plot()}}, and returns the image invisi
 }
 \examples{
 \dontrun{
-connect_to_model("mohsenss/qrisk3pexa", access_key = "YOUR_KEY")
-
-# Run a model that generates a plot (hist = TRUE triggers a server-side plot)
-result <- model_run(get_sample_input(), func_name = "model_run")
+# toymodel1's model_run() draws a barplot, captured server-side by OpenCPU.
+connect_to_model("examples/toymodel1", access_key = "YOUR_KEY")
+result <- model_run(get_sample_input())
 
 # See what plots are available
 get_plots(result)

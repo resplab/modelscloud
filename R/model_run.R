@@ -35,7 +35,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' connect_to_model("resp/epicr", access_key = "YOUR_KEY")
+#' connect_to_model("examples/toymodel2", access_key = "YOUR_KEY")
 #'
 #' # Run with model defaults
 #' result <- model_run()

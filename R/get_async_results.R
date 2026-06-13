@@ -34,7 +34,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' connect_to_model("mohsenss/epicrpexa", access_key = "YOUR_KEY")
+#' connect_to_model("examples/toymodel2", access_key = "YOUR_KEY")
 #'
 #' # Submit asynchronously per call, then poll manually
 #' job <- model_run(async = TRUE)

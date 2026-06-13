@@ -19,21 +19,30 @@ remotes::install_github("resplab/modelscloud")
 
 ## Quick start
 
+The examples below use the public **`examples`** collection — two minimal toy
+models you can call with the shared public test key, no signup required.
+
 ```r
 library(modelscloud)
 
-# Connect once — stores your key and the model path for the rest of the session
-connect_to_model("mohsenss/qrisk3pexa", access_key = "YOUR_API_KEY")
+# Connect once — stores the model path and key for the rest of the session.
+# (Public test key for the examples collection.)
+connect_to_model("examples/toymodel1",
+                 access_key = "23b7bab3-118e-4516-b53c-91bca8e0082d")
 
-# Get a sample input from the model
+# Get a sample input, then run the model
 sample <- get_sample_input()
-
-# Run the model — model_input is the first argument, so this just works
 result <- model_run(sample)
 print(result)
+#>   sex age marker_value    risk
+#> 1   0  55          1.2 0.05787
+#> 2   1  62          2.4 0.27289
+#> 3   1  48          0.7 0.04565
 ```
 
-API keys can be obtained from the [ModelsCloud platform](https://modelscloud.resp.core.ubc.ca/).
+`toymodel1` is a toy **prediction** model (predicts a risk from `sex`, `age`,
+`marker_value`). For your own models, get an API key from the
+[ModelsCloud platform](https://modelscloud.resp.core.ubc.ca/).
 
 ---
 
@@ -45,32 +54,29 @@ API keys can be obtained from the [ModelsCloud platform](https://modelscloud.res
 | `model_run()` | Execute the model and return results |
 | `get_sample_input()` | Retrieve an example input dataset from the model |
 | `get_default_input()` | Retrieve the model's built-in default inputs |
+| `get_async_results()` | Retrieve the result of an asynchronous run |
 
 `connect_to_model()` is optional but recommended — once called, all subsequent functions inherit the stored model path and API key so you don't have to repeat them.
 
 ---
 
-## Usage patterns
+## Two ways to supply credentials
 
-### Pattern 1 — connect once, call freely (recommended)
-
-Call `connect_to_model()` at the top of your script with your key and the model you want to use. Every subsequent call picks up those stored values automatically.
+**Pattern 1 — connect once, call freely (recommended).** Every later call picks up the stored values.
 
 ```r
-connect_to_model("mohsenss/qrisk3pexa", access_key = "YOUR_API_KEY")
+connect_to_model("examples/toymodel1",
+                 access_key = "23b7bab3-118e-4516-b53c-91bca8e0082d")
 
-sample  <- get_sample_input()
-default <- get_default_input()
-result  <- model_run(sample)       # model_input is first — no keyword needed
+sample <- get_sample_input()
+result <- model_run(sample)        # model_input is first — no keyword needed
 ```
 
-### Pattern 2 — supply credentials on every call (no connect needed)
-
-You can skip `connect_to_model()` entirely and pass `model_path` and `access_key` directly to each function. Useful for one-off calls or when you prefer explicit control.
+**Pattern 2 — supply credentials on every call.** Skip `connect_to_model()` entirely.
 
 ```r
-ak <- "YOUR_API_KEY"
-mp <- "mohsenss/qrisk3pexa"
+ak <- "23b7bab3-118e-4516-b53c-91bca8e0082d"
+mp <- "examples/toymodel1"
 
 sample <- get_sample_input(model_path = mp, access_key = ak)
 result <- model_run(model_path = mp, model_input = sample, access_key = ak)
@@ -78,30 +84,42 @@ result <- model_run(model_path = mp, model_input = sample, access_key = ak)
 
 ---
 
-## Example: QRISK3 cardiovascular risk model
+## Synchronous and asynchronous runs
 
-[QRISK3](https://qrisk.org/) estimates an individual's 10-year risk of developing cardiovascular disease.
+Quick models run **synchronously** — `model_run()` blocks and returns the
+result. Heavier models (large simulations) can run **asynchronously**:
+`model_run(async = TRUE)` returns immediately with a job handle, and you fetch
+the result later with `get_async_results()`.
 
 ```r
-library(modelscloud)
+connect_to_model("examples/toymodel2",
+                 access_key = "23b7bab3-118e-4516-b53c-91bca8e0082d")
 
-connect_to_model("mohsenss/qrisk3pexa", access_key = "YOUR_API_KEY")
+input <- get_default_input()
+input$n_agents <- 1e7            # a large run
 
-# Get the full sample dataset
-patients <- get_sample_input()
-head(patients)
-#>   patid gender age atrial_fibrillation weight height ...
-#> 1     1      1  64                   0     80    178 ...
+job    <- model_run(input, async = TRUE)      # returns at once
+result <- get_async_results(job, wait = TRUE) # block and poll until done
+result$total_qaly
+```
 
-# Run on all patients
-results <- model_run(patients)
-head(results[, c("ID", "QRISK3_2017")])
-#>   ID QRISK3_2017
-#> 1  1    17.22985
-#> 2  2    36.01234
+`toymodel2` is a toy **policy/economic** model. See the *"Synchronous and
+asynchronous model runs"* vignette for the full async workflow (manual polling,
+progress checks, timeouts).
 
-# Run on a subset
-results_5 <- model_run(get_sample_input(n = 5))
+---
+
+## Vignettes
+
+| Vignette | Topic |
+|---|---|
+| **Getting started** | The basics with the `examples` toy models |
+| **Synchronous and asynchronous model runs** | Sync vs async, polling, progress |
+| **Example: QRISK3** | A real cardiovascular risk prediction model |
+| **Example: EPIC-R** | A real COPD policy model (async + plots) |
+
+```r
+browseVignettes("modelscloud")
 ```
 
 ---
@@ -114,7 +132,7 @@ results_5 <- model_run(get_sample_input(n = 5))
 modelscloud          pexaclient           ModelsCloud API        model package
 ────────────         ──────────           ───────────────        ─────────────
 model_run()    →   function_call()   →   POST /call/{model}  →  model_run()
-                                    ←   RDS response        ←  data.frame
+                                    ←   RDS response        ←  result
                ←   raw bytes        ←
      result    ←   readRDS()
 ```
@@ -126,7 +144,10 @@ model_run()    →   function_call()   →   POST /call/{model}  →  model_run(
 | Package | Role |
 |---|---|
 | [`pexaclient`](https://github.com/resplab/pexaclient) | Low-level HTTP client for the ModelsCloud API |
-| [`qrisk3pexa`](https://github.com/resplab/qrisk3pexa) | QRISK3 model wrapper deployed on ModelsCloud |
+| [`toymodel1`](https://github.com/resplab/toymodel1) | Toy prediction model (examples collection) |
+| [`toymodel2`](https://github.com/resplab/toymodel2) | Toy policy/economic model (examples collection) |
+| [`qrisk3pexa`](https://github.com/resplab/qrisk3pexa) | QRISK3 cardiovascular risk model |
+| [`epicrpexa`](https://github.com/resplab/epicrpexa) | EPIC-R COPD policy model |
 
 ---
 

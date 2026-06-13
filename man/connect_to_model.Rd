@@ -43,13 +43,13 @@ except \code{model_path}.
 \examples{
 \dontrun{
 connect_to_model(
-  model_path = "resp/epicr",
+  model_path = "examples/toymodel1",
   access_key = "YOUR_API_KEY"
 )
 
 # Async by default, custom server
 connect_to_model(
-  model_path = "resp/epicr",
+  model_path = "examples/toymodel2",
   access_key = "YOUR_API_KEY",
   server_url = "https://myserver.example.com/",
   async      = TRUE

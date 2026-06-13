@@ -32,7 +32,7 @@ not explicitly supplied.
 }
 \examples{
 \dontrun{
-connect_to_model("mohsenss/qrisk3pexa", access_key = "YOUR_KEY")
+connect_to_model("examples/toymodel1", access_key = "YOUR_KEY")
 sample <- get_sample_input()
 result <- model_run(model_input = sample)
 }
