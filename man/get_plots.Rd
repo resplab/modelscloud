@@ -9,7 +9,7 @@ get_plots(result, id = NULL, access_key = NULL, server_url = NULL)
 \arguments{
 \item{result}{The object returned by \code{\link[=model_run]{model_run()}}.}
 
-\item{id}{Integer or character. Which plot to fetch. Use the \code{id} column
+\item{id}{Integer or character. Which plot to retrieve. Use the \code{id} column
 from the listing (no-argument) call to find valid values. If \code{NULL}
 (default), returns a data frame listing all available plots.}
 
@@ -20,20 +20,20 @@ or the \code{MODELSCLOUD_ACCESS_KEY} environment variable.}
 }
 \value{
 If \code{id = NULL}: a data frame summarising available plots (one row
-per plot). If \code{id} is supplied: the plot image, returned invisibly after
-being displayed.
+per plot). If \code{id} is supplied: the plot image object, which you display
+with \code{plot()}.
 }
 \description{
 Models hosted on ModelsCloud can generate plots as side-outputs during a
-run (e.g. a histogram of predicted risks). \code{get_plots()} retrieves those
-plots from the server and displays them.
+run (e.g. a barplot of predicted risks). \code{get_plots()} \emph{retrieves} those
+plots from the server; it does not draw them. To display a retrieved plot,
+call \code{plot()} on it (an S3 \code{plot} method renders the image).
 
 Pass the object returned by \code{\link[=model_run]{model_run()}} directly — the server connection
 details are carried along automatically.
 
 Called with no \code{id}, \code{get_plots()} lists all available plots and returns a
-summary data frame. Called with an \code{id}, it fetches that plot, displays it
-with \code{\link[graphics:plot]{graphics::plot()}}, and returns the image invisibly.
+summary data frame. Called with an \code{id}, it returns that plot's image.
 }
 \examples{
 \dontrun{
@@ -44,8 +44,9 @@ result <- model_run(get_sample_input())
 # See what plots are available
 get_plots(result)
 
-# Fetch and display the first plot
-get_plots(result, id = 1)
+# Retrieve the first plot, then display it
+img <- get_plots(result, id = 1)
+plot(img)
 }
 }
 \seealso{

@@ -71,17 +71,19 @@ locally.
 
 Some models draw plots while they run. `toymodel1`, for instance, produces a
 barplot of the predicted risks. OpenCPU captures any such plot on the server,
-and you fetch it with `get_plots()`:
+and you fetch it with `get_plots()` — which *retrieves* the plot but does not
+draw it. To display it, call `plot()` on the retrieved image:
 
 ```{r plots}
 result <- model_run(get_sample_input())
 
-get_plots(result)            # list the plots this run produced
-get_plots(result, id = 1)    # fetch and display the first one
+get_plots(result)                  # list the plots this run produced
+img <- get_plots(result, id = 1)   # retrieve the first one
+plot(img)                          # display it
 ```
 
 Calling `get_plots(result)` with no `id` lists what's available; passing an
-`id` downloads that plot and displays it.
+`id` returns that plot's image, which you then `plot()`.
 
 ## 4. A policy model with default inputs
 
