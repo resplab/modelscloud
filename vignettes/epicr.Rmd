@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette shows `modelscloud` against a **real** policy model:
-[EPIC](https://resp.core.ubc.ca/research/EPIC), a whole-disease microsimulation
+[EPIC](https://www.ubcresplab.ca/epic), a whole-disease microsimulation
 of chronic obstructive pulmonary disease (COPD). It is served as
 `mohsenss/epicrpexa`, a wrapper around the `epicR` package.
 
