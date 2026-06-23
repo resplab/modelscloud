@@ -11,7 +11,7 @@ local({
   cache$async      <- FALSE
 })
 
-MODEL_PATH <- "mohsenss/qrisk3pexa"
+MODEL_PATH <- "resplab/qrisk3pexa"
 
 skip_if_no_token <- function() {
   skip_if(

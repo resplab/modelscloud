@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 This vignette shows `modelscloud` against a **real** policy model:
 [EPIC](https://www.ubcresplab.ca/epic), a whole-disease microsimulation
 of chronic obstructive pulmonary disease (COPD). It is served as
-`mohsenss/epicrpexa`, a wrapper around the `epicR` package.
+`resplab/epicrpexa`, a wrapper around the `epicR` package.
 
 Where QRISK3 (see the other example vignette) is a quick prediction model, EPIC
 is a simulation whose runtime grows with the number of simulated agents — so it
@@ -30,7 +30,7 @@ API key.
 ```{r setup}
 library(modelscloud)
 
-connect_to_model("mohsenss/epicrpexa", access_key = "YOUR_API_KEY")
+connect_to_model("resplab/epicrpexa", access_key = "YOUR_API_KEY")
 ```
 
 ## Default input
