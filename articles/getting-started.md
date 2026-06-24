@@ -1,0 +1,131 @@
+# Getting started with modelscloud
+
+`modelscloud` lets you call models hosted on the ModelsCloud platform as
+if they were local R functions. This vignette walks through the basics
+using the public **`examples`** collection — two minimal toy models you
+can run with a shared public test key, no signup required.
+
+``` r
+
+library(modelscloud)
+
+# Public test key for the `examples` collection
+KEY <- "23b7bab3-118e-4516-b53c-91bca8e0082d"
+```
+
+## 1. Connect to a model
+
+[`connect_to_model()`](https://resplab.github.io/modelscloud/reference/connect_to_model.md)
+stores the model path and your key for the rest of the session, so you
+don’t repeat them on every call. It’s optional (you can pass
+`model_path` / `access_key` to each function instead) but it keeps
+scripts tidy.
+
+``` r
+
+connect_to_model("examples/toymodel1", access_key = KEY)
+```
+
+Model paths are `"<collection>/<model>"`, e.g. `"examples/toymodel1"`.
+
+## 2. A prediction model (synchronous)
+
+`toymodel1` predicts a risk for one or more patients from `sex`, `age`,
+and `marker_value`. Two functions cover the workflow:
+
+- [`get_sample_input()`](https://resplab.github.io/modelscloud/reference/get_sample_input.md)
+  — an example input you can run as-is
+- [`model_run()`](https://resplab.github.io/modelscloud/reference/model_run.md)
+  — runs the model and returns the result
+
+``` r
+
+sample <- get_sample_input()
+sample
+#>   sex age marker_value
+#> 1   0  55          1.2
+#> 2   1  62          2.4
+#> 3   1  48          0.7
+
+result <- model_run(sample)   # model_input is the first argument
+result
+#>   sex age marker_value    risk
+#> 1   0  55          1.2 0.05787
+#> 2   1  62          2.4 0.27289
+#> 3   1  48          0.7 0.04565
+```
+
+The result comes back as a native R data frame — class information is
+preserved across the network, so you can work with it exactly as if the
+model had run locally.
+
+## 3. Retrieving plots a model produced
+
+Some models draw plots while they run. `toymodel1`, for instance,
+produces a barplot of the predicted risks. OpenCPU captures any such
+plot on the server, and you fetch it with
+[`get_plots()`](https://resplab.github.io/modelscloud/reference/get_plots.md)
+— which *retrieves* the plot but does not draw it. To display it, call
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the
+retrieved image:
+
+``` r
+
+result <- model_run(get_sample_input())
+
+get_plots(result)                  # list the plots this run produced
+img <- get_plots(result, id = 1)   # retrieve the first one
+plot(img)                          # display it
+```
+
+Calling `get_plots(result)` with no `id` lists what’s available; passing
+an `id` returns that plot’s image, which you then
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html).
+
+## 4. A policy model with default inputs
+
+`toymodel2` is a small policy/economic simulation. Instead of a sample
+dataset it exposes
+[`get_default_input()`](https://resplab.github.io/modelscloud/reference/get_default_input.md)
+— a ready-to-use set of parameters you can tweak before running.
+
+``` r
+
+connect_to_model("examples/toymodel2", access_key = KEY)
+
+input <- get_default_input()
+names(input)
+#> "n_agents" "time_horizon" "p_event" "cost_event" ...
+
+input$n_agents <- 5000        # adjust any parameter
+result <- model_run(input)
+result$total_qaly
+```
+
+## 5. Supplying credentials without connecting
+
+If you prefer not to call
+[`connect_to_model()`](https://resplab.github.io/modelscloud/reference/connect_to_model.md),
+pass `model_path` and `access_key` directly. An explicit argument always
+overrides the stored value.
+
+``` r
+
+sample <- get_sample_input(model_path = "examples/toymodel1", access_key = KEY)
+result <- model_run(sample, model_path = "examples/toymodel1", access_key = KEY)
+```
+
+You can also store your key once in `.Renviron` as
+`MODELSCLOUD_ACCESS_KEY`; `modelscloud` will pick it up automatically,
+so a bare `connect_to_model("examples/toymodel1")` is enough.
+
+## Where next
+
+- **Synchronous and asynchronous model runs** — for models that may take
+  a while, submit a job and poll for the result.
+- **Example: QRISK3** and **Example: EPIC-R** — real deployed models.
+
+``` r
+
+vignette("async", package = "modelscloud")
+```
