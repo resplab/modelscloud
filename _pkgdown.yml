@@ -1,0 +1,30 @@
+url: https://resplab.github.io/modelscloud/
+
+template:
+  bootstrap: 5
+
+reference:
+- title: Connecting
+  desc: Set up a session against a hosted model.
+  contents:
+  - connect_to_model
+- title: Running models
+  desc: Run a model and retrieve its outputs.
+  contents:
+  - model_run
+  - get_async_results
+  - get_plots
+- title: Exploring inputs
+  desc: Discover what a model expects.
+  contents:
+  - get_sample_input
+  - get_default_input
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - getting-started
+  - async
+  - qrisk3
+  - epicr

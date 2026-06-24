@@ -5,4 +5,5 @@
 .positai
 /doc/
 /Meta/
-vignettes/epicr.html
+vignettes/*.html
+docs/

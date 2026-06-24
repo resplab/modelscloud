@@ -10,6 +10,8 @@ Description: A high-level R interface for accessing models hosted on the
     with connect_to_model(), then call model_run(), get_default_input(), and
     get_sample_input() without repeating credentials or model paths.
 License: GPL-3
+URL: https://github.com/resplab/modelscloud, https://resplab.github.io/modelscloud/
+BugReports: https://github.com/resplab/modelscloud/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
@@ -19,8 +21,10 @@ Remotes:
     resplab/pexaclient
 Suggests:
     knitr,
+    pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
     withr
 VignetteBuilder: knitr
+Config/Needs/website: pkgdown
 Config/roxygen2/version: 8.0.0
