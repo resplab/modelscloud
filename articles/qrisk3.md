@@ -3,7 +3,7 @@
 This vignette shows `modelscloud` against a **real** deployed model:
 [QRISK3](https://qrisk.org/), which estimates an individual’s 10-year
 risk of developing cardiovascular disease. It is served as
-`resplab/qrisk3pexa`, a wrapper around the
+`resplab/qrisk3`, a wrapper around the
 [`QRISK3`](https://cran.r-project.org/package=QRISK3) R package.
 
 Unlike the toy models in the *Getting started* vignette, this model
@@ -14,7 +14,7 @@ API key.
 
 library(modelscloud)
 
-connect_to_model("resplab/qrisk3pexa", access_key = "YOUR_API_KEY")
+connect_to_model("resplab/qrisk3", access_key = "YOUR_API_KEY")
 ```
 
 ## Sample input

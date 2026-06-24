@@ -3,7 +3,7 @@
 This vignette shows `modelscloud` against a **real** policy model:
 [EPIC](https://www.ubcresplab.ca/epic), a whole-disease microsimulation
 of chronic obstructive pulmonary disease (COPD). It is served as
-`resplab/epicrpexa`, a wrapper around the `epicR` package.
+`resplab/epicr`, a wrapper around the `epicR` package.
 
 Where QRISK3 (see the other example vignette) is a quick prediction
 model, EPIC is a simulation whose runtime grows with the number of
@@ -17,7 +17,7 @@ your own API key.
 
 library(modelscloud)
 
-connect_to_model("resplab/epicrpexa", access_key = "YOUR_API_KEY")
+connect_to_model("resplab/epicr", access_key = "YOUR_API_KEY")
 ```
 
 ## Default input
